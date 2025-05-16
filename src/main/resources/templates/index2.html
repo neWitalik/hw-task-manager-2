@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <h1 class="my-4">Task List</h1>
+
+    <!-- Add Task Button (For future functionality) -->
+    <a href="#" class="btn btn-primary mb-3" id="addTaskBtn">Add Task</a>
+
+    <!-- Table for displaying tasks -->
+    <table class="table table-striped" id="taskTable">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Description</th>
+            <th>Complete</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Task rows will be dynamically inserted here -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const taskTable = document.getElementById('taskTable').getElementsByTagName('tbody')[0];
+
+        // Fetch tasks from API and populate the table
+        function loadTasks() {
+            fetch('/api/tasks')
+                .then(response => response.json())
+                .then(tasks => {
+                    taskTable.innerHTML = ''; // Clear the table before inserting new rows
+                    tasks.forEach(task => {
+                        const row = taskTable.insertRow();
+                        row.innerHTML = `
+                            <td>${task.id}</td>
+                            <td>${task.description}</td>
+                            <td>${task.complete ? 'Yes' : 'No'}</td>
+                            <td>
+                                <button class="btn btn-warning toggle-btn" data-id="${task.id}">
+                                    ${task.complete ? 'Mark Incomplete' : 'Mark Complete'}
+                                </button>
+                            </td>
+                        `;
+
+                        // Attach toggle functionality to the button
+                        row.querySelector('.toggle-btn').addEventListener('click', function() {
+                            toggleTask(task.id);
+                        });
+                    });
+                })
+                .catch(error => console.error('Error loading tasks:', error));
+        }
+
+        // Toggle task completion
+        function toggleTask(taskId) {
+            fetch(`/api/tasks/${taskId}/toggle`, {
+                method: 'POST',
+            })
+                .then(response => {
+                    if (response.ok) {
+                        loadTasks(); // Reload the tasks after toggling
+                    } else {
+                        alert('Failed to toggle task.');
+                    }
+                })
+                .catch(error => console.error('Error toggling task:', error));
+        }
+
+        // Add task button functionality (future feature)
+        document.getElementById('addTaskBtn').addEventListener('click', function() {
+            const description = prompt('Enter task description:');
+            if (description) {
+                fetch('/api/tasks', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ description: description }),
+                })
+                    .then(response => response.json())
+                    .then(task => {
+                        loadTasks(); // Reload the tasks after adding a new one
+                    })
+                    .catch(error => console.error('Error adding task:', error));
+            }
+        });
+
+        // Initial load of tasks
+        loadTasks();
+    });
+</script>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

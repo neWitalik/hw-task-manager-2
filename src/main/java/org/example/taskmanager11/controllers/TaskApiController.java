@@ -1,5 +1,7 @@
-package org.example.taskmanager11;
+package org.example.taskmanager11.controllers;
 
+import org.example.taskmanager11.model.Task;
+import org.example.taskmanager11.services.TaskService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
